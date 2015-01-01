@@ -12,18 +12,28 @@ import (
 //	"bytes"
 	"encoding/json"
 	"strconv"
+	"flag"
 )
 
 
-var bodys = make(chan string, 10)
+var downloadPath = flag.String("-dpath",".","指定一个下载文件保存")
+var targetUrl =flag.String("-durl","http://news-at.zhihu.com/api/3/news/latest","指定一个下载url")
+var DOWNLOAD = downloadPath
+
+
 var ZhihunewsUrl = "http://news-at.zhihu.com/api/3/news/latest"
 //var ZhihunewsUrl ="http://news.at.zhihu.com/api/3/news/before/20131119"
 var patch_shareUrl = "http://daily.zhihu.com/story/"
+
+//知乎新闻格式
 type TodayNews struct{
 	Date string `json:"date"`
 	Story []Item  `json:"stories"`
 	TopStory []Item  `json:"top_stories"`
 } 
+
+
+
 type Item struct {
 	Theme_name     string `json:"theme_name"`
 	Subscribed bool `json:"subscribed"`
@@ -38,7 +48,7 @@ type Item struct {
 	Id    int `json:"id"`
 }
 
-var reg1 = regexp.MustCompile("")
+
 
 func Creator(name string) {
 	file ,err :=os.Getwd()
@@ -49,11 +59,9 @@ func Creator(name string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(sep)
-	fmt.Println(file)
-
 }
 
+//将byte流转化为一个结构体
 func ParseContent(jsonstream []byte) *TodayNews{
 	var content TodayNews
 	err :=json.Unmarshal(jsonstream,&content)
@@ -63,8 +71,7 @@ func ParseContent(jsonstream []byte) *TodayNews{
 	return &content
 }
 
-const DOWNLOAD = "./images/"
-
+//判断文件状态
 func isExist(path string)bool{
 	exist ,err:=os.Stat(path)
 	if err!=nil{
@@ -80,6 +87,7 @@ func isExist(path string)bool{
 	return true
 }
 
+//根据新闻项的id和固定URL来取得新闻内容，并保存为.html文件
 func GetStoryContent(it Item){
 	var content []byte
 	var filepath string
@@ -91,7 +99,7 @@ func GetStoryContent(it Item){
 	}()
 	body ,err:=http.Get(patch_shareUrl+strconv.Itoa(it.Id))
 	if err!=nil{
-		//panic(err)
+		panic(err)
 	}
 	filepath = DOWNLOAD+it.Title+it.Theme_name+".html"
 	
@@ -108,9 +116,14 @@ func GetStoryContent(it Item){
 	}
 	
 }
+
 //t := time.Date(2013, time.May, 20, 23, 0, 0, 0, time.UTC); t.Before(time.Now()); t = t.AddDate(0, 0, 1)
 func GetPageBody(urlpath string){
 	urlpath = ZhihunewsUrl
+	if urlpath=""{
+		fmt.Println("url path are null ")
+		return
+	}
 	resp, err := http.Get(urlpath)
 	defer func(){
 		v := recover()
@@ -130,14 +143,13 @@ func GetPageBody(urlpath string){
 		panic(err)
 	}
 	
-
 	content = ParseContent([]byte(body))
 	fmt.Println(content.Date)
 	for _,item :=range  content.Story{
 		resp ,err :=http.Get(item.Images[0])
 		imgBody ,err:=ioutil.ReadAll(resp.Body)
 		if err!=nil{
-			fmt.Println(err)
+			panic(err)
 		}
 		GetStoryContent(item)
 		temp := strings.Split(item.Images[0],"/")
@@ -147,7 +159,7 @@ func GetPageBody(urlpath string){
 		}else{
 			file ,err:=os.Create(imagePath)
 			if err!=nil{
-				fmt.Println(err)
+				panic(err)
 			}
 			file.Write(imgBody)
 		}
@@ -157,14 +169,9 @@ func GetPageBody(urlpath string){
 		fmt.Println(item.Image)
 		resp ,err :=http.Get(item.Image)
 		if err!=nil{
-			fmt.Println(err)
+			panic(err)
 		}
-		fmt.Println(resp.ContentLength)
-		fmt.Println(resp.Status)
 	}
-
-	
-	//bodys<-string(body)
 	return
 }
 
