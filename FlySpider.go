@@ -2,15 +2,26 @@ package main
 
 import (
 	//"fmt"
-//	"FlySpider/messager"
+	"FlySpider/messager"
 	"runtime"
-	"time"
+	//"time"
 )
+
 
 func main() {
 
-	//messager.MsgMain()
+    if true{
+		messager.MsgMain()
+	}else if false{
+		Funny()
+	}
+	
 	runtime.GOMAXPROCS(4)
-	TestMain()
-	time.Sleep(time.Second * 4)
+	for{
+		select{
+			
+		}
+	}
+	//TestMain()
+	//time.Sleep(time.Second * 4)
 }

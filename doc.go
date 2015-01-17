@@ -5,14 +5,12 @@ FlySpider document
 */
 package main
 
-
-import(
+import (
 	"fmt"
 	//"github.com/sjwhitworth/golearn"
 )
 
-func Doc(){
+func Doc() {
 	fmt.Println("doc function")
-	
-	
+
 }
