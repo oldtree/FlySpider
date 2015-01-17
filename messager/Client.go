@@ -11,25 +11,65 @@ import (
 	"errors"
 )
 
+var tick = time.NewTicker(time.Second)
+
+
+type Message chan []byte
 
 type Client struct{
 	conn net.Conn
-	inmsg Message
-	outmsg Message
+	inmsg Message  // come from server
+	outmsg Message // send into server
 	name string
 	id   int64
+	serv *Server
 }
+
+func (c *Client)SendMsg(){
+	defer c.Close()
+	for{
+		select{
+			case msg:=<-c.inmsg:
+				le , err:=c.conn.Write(msg)
+				if err!=nil{
+					fmt.Println("send massage error")
+					break
+				}
+				fmt.Printf("message len : %d" , le)
+		}
+	}
+}
+
+func (c *Client)RecvMsg(){
+	
+	defer c.Close()
+	for {
+		var msgbyte [128]byte
+		var readBuffer = bytes.NewBuffer(msgbyte[0:])
+		le ,err:=c.conn.Read(msgbyte[0:])
+		if err!=nil{
+			if err != io.EOF{
+				fmt.Println(errors.New("read data error"))
+				break
+			}
+		}
+		c.outmsg<-readBuffer.Bytes()[0:le]
+		//fmt.Println(readBuffer.Bytes())
+	}
+}
+
+func (c *Client)Close(){
+	c.conn.Close()
+}
+
 
 func NewClient()*Client{
 	return &Client{
-		inmsg:make(chan string ,8),
-		outmsg :make(chan string,8),
-		name :"hello",
+		inmsg:make(chan []byte ,8),
+		outmsg :make(chan []byte,8),
 	}
 	
 }
-
-var tick = time.NewTicker(time.Second)
 
 
 func CMsgMain(){
@@ -55,7 +95,6 @@ func CMsgMain(){
 		fmt.Println(err)
 	}
 	for{
-		
 		var msgbyte [128]byte
 	    var readBuffer = bytes.NewBuffer(msgbyte[0:])
 		

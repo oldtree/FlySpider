@@ -12,7 +12,7 @@ import (
 //	"math/rand"
 )
 
-type Message chan string
+
 
 const (
 	MINCLientNUM = 128
@@ -68,7 +68,9 @@ func (s *Server)Listen(addr_port string){
 		}
 		
 		//s.pender <- nConn
+		fmt.Println("before call go s.RecvMsg(nConn)")
 		go s.RecvMsg(nConn)
+		fmt.Println("after call go s.RecvMsg(nConn)")
 	}
 }
 
