@@ -14,7 +14,7 @@ import (
 var tick = time.NewTicker(time.Second)
 
 
-type Message chan []byte
+type Message chan Shell_message
 
 type Client struct{
 	conn net.Conn
@@ -24,18 +24,21 @@ type Client struct{
 	id   int64
 	serv *Server
 }
+//每次我只是把这两天听的歌的歌名挂在那里
+
 
 func (c *Client)SendMsg(){
 	defer c.Close()
 	for{
 		select{
 			case msg:=<-c.inmsg:
-				le , err:=c.conn.Write(msg)
+			    data ,err := json.Marshal(msg)
+				le , err:=c.conn.Write(data)
 				if err!=nil{
 					fmt.Println("send massage error")
 					break
 				}
-				fmt.Printf("message len : %d" , le)
+				fmt.Printf("message len : %d   \n " , le)
 		}
 	}
 }
@@ -46,6 +49,7 @@ func (c *Client)RecvMsg(){
 	for {
 		var msgbyte [128]byte
 		var readBuffer = bytes.NewBuffer(msgbyte[0:])
+		var msg Shell_message
 		le ,err:=c.conn.Read(msgbyte[0:])
 		if err!=nil{
 			if err != io.EOF{
@@ -53,8 +57,11 @@ func (c *Client)RecvMsg(){
 				break
 			}
 		}
-		c.outmsg<-readBuffer.Bytes()[0:le]
-		//fmt.Println(readBuffer.Bytes())
+		err = json.Unmarshal(readBuffer.Bytes()[0:le],msg)
+		if err!=nil{
+			fmt.Println("recv message ok ,Unmarshal wrong")
+		}
+		c.outmsg<-msg
 	}
 }
 
@@ -65,8 +72,8 @@ func (c *Client)Close(){
 
 func NewClient()*Client{
 	return &Client{
-		inmsg:make(chan []byte ,8),
-		outmsg :make(chan []byte,8),
+		inmsg:make(chan Shell_message ,8),
+		outmsg :make(chan Shell_message,8),
 	}
 	
 }

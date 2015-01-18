@@ -22,24 +22,17 @@ const (
 type Server struct{
 	ClientTable map[int64]Client
 	listener net.Listener
-	pender  chan net.Conn
-	quiter  chan net.Conn
+	FromClient  Message
+	ToCliet  Message
 	down    chan bool
 }
 
 
 func NewServer()*Server{
-	//ser := &Server{
-	//	ClientTable:    make(map[net.Conn]Client,MINCLientNUM),
-	//	pender:		 	make(chan net.Conn,16),
-	//	quiter:			make(chan net.Conn,16),
-		
-	//}
-	
 	ser := new(Server)
 	ser.ClientTable = make(map[int64]Client,MINCLientNUM)
-	ser.pender = make(chan net.Conn,16)
-	ser.quiter = make(chan net.Conn,16)
+	ser.FromClient = make(Message,16*8)
+	ser.ToCliet = make(Message,16*8)
 	
 	return ser
 }
@@ -75,14 +68,12 @@ func (s *Server)Listen(addr_port string){
 }
 
 
-func (s *Server)JoinClient(){
+func (s *Server)MsgFromClient(){
 	
 	for {
 		select{
-			case conn := <-s.pender:
-				client := NewClient()
-				client.conn  = conn
-//				s.ClientTable[conn] = *client
+			case msg := <-s.FromClient:
+			    s.ClientTable[msg.Userid].inmsg<-msg
 			case state:=<-s.down:
 				if state{
 					fmt.Printf("server state change to : %s ",state)
@@ -96,12 +87,11 @@ func (s *Server)JoinClient(){
 }
 
 
-func (s *Server)LeaveClient(){
+func (s *Server)MsgToClient(){
 	for {
 		select{
-			case conn := <-s.quiter:
-				//delete(s.ClientTable,conn)
-				fmt.Println(conn)
+			case msg := <-s.ToCliet:
+			    s.ClientTable[msg.Userid].outmsg<-msg
 			case state:=<-s.down:
 			    if state{
 					fmt.Printf("server state change to : %s ",state)
