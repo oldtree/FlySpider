@@ -2,7 +2,6 @@ package messager
 
 
 import (
-    "fmt"
 	"time"
 
 )
@@ -12,10 +11,9 @@ func MsgMain(){
 	go s.Listen("")
 	select{
 		case <-time.After(time.Second * 4):
-		fmt.Println("CMsgMain function")
-		go CMsgMain()
+		go CMsgMain1()
+		go CMsgMain2()
 		
-		fmt.Println("all run")
 		case <-time.After(time.Second * 10):
 		break
 	}

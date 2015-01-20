@@ -14,11 +14,16 @@ const (
 	PEER2PEER_MESSAGE_ID  = 1
 	PEER2N_MESSAGE_ID  = 2
 	N2PEER_MESSAGE_ID  = 3
+	
+	
 	LOGIN_MESSAGE_ID  = 128
-	LOGOUT_MESSAGE_ID = 129
+	LOGINOK_MESSAGE_ID  = 129
+	LOGOUT_MESSAGE_ID = 130
+	LOGOUTOK_MESSAGE_ID = 131
 )
 type Shell_message struct{
 	Userid int64 `json:"userid"`
+	To int64 `json:"to"`
 	Messgeid int `json:"messgeid"`
 	MessageBody []byte `json:"messagebody"`
 }
