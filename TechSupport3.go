@@ -80,6 +80,7 @@ func ParamChan( param chan int){
 		}
 	}
 LL:
+    close(param)
 	fmt.Println(temp)
 }
 
@@ -104,7 +105,20 @@ LL:
 
 }
 
+type Param struct{
+	
+}
+
+func StructParam(s struct{}){
+	fmt.Println(reflect.TypeOf(s))
+}
+
+func StructParamTest(){
+	var pa Param
+	StructParam(pa)
+}
+
 
 func TechMain3(){
-	ParamChanTest()
+	StructParamTest()
 }

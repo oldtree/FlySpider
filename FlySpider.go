@@ -5,12 +5,13 @@ import (
 	"FlySpider/messager"
 	"runtime"
 	//"time"
+	"FlySpider/Patten"
 )
 
 
 func main() {
 
-    if true{
+    if false{
 		messager.MsgMain()
 		runtime.GOMAXPROCS(4)
 		for{
@@ -23,6 +24,8 @@ func main() {
 	}else if false{
 		TechMain3()
 		fmt.Println("techmain3")
+	}else if true{
+		Patten.PTest()
 	}
 	
 	
